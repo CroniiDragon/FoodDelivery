@@ -1,0 +1,49 @@
+# ══════════════════════════════════════════════════════
+#  .gitignore — FoodDelivery Platform
+#  ASP.NET Core + React/Vite + SQL Server
+# ══════════════════════════════════════════════════════
+
+# ── Visual Studio ──────────────────────────────────────
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# ── Build outputs ──────────────────────────────────────
+bin/
+obj/
+out/
+publish/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+
+# ── .NET / C# ──────────────────────────────────────────
+*.dll
+*.exe
+*.pdb
+*.cache
+*.log
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+!**/packages/repositories.config
+
+# ── React / Node.js ────────────────────────────────────
+fooddelivery-frontend/node_modules/
+fooddelivery-frontend/.env
+fooddelivery-frontend/.env.local
+fooddelivery-frontend/.env.production
+fooddelivery-frontend/dist/
+fooddelivery-frontend/.vite/
