@@ -1,0 +1,6 @@
+@FoodDelivery.NotificationService_HostAddress = http://localhost:5071
+
+GET {{FoodDelivery.NotificationService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
