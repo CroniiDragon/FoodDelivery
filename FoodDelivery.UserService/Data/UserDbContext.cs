@@ -2,13 +2,9 @@ using FoodDelivery.UserService.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace FoodDelivery.UserService.Data;
-
-// SRP: Responsabilitate unica - configurarea bazei de date pentru UserService
 public class UserDbContext : DbContext
 {
     public UserDbContext(DbContextOptions<UserDbContext> options) : base(options) { }
-
-    // EF Core va crea tabelele Customers si Couriers in SQL Server
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<Courier> Couriers => Set<Courier>();
 
@@ -16,7 +12,7 @@ public class UserDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Configurare tabel Customers
+        // Config table Customers
         modelBuilder.Entity<Customer>(entity =>
         {
             entity.ToTable("Customers");
@@ -30,7 +26,7 @@ public class UserDbContext : DbContext
             entity.Property(e => e.City).HasMaxLength(100);
         });
 
-        // Configurare tabel Couriers
+        //Couriers
         modelBuilder.Entity<Courier>(entity =>
         {
             entity.ToTable("Couriers");

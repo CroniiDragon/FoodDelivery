@@ -4,17 +4,13 @@ using FoodDelivery.NotificationService.Models;
 using FoodDelivery.Shared.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
-// ════ Services/NotificationService.cs ══════════════════════
 namespace FoodDelivery.NotificationService.Services;
 
-// SRP + DIP
-// OCP: Noi canale se adauga prin INotificationChannel, nu prin modificarea acestei clase
 public class NotificationService : INotificationService
 {
     private readonly INotificationRepository _repo;
     private readonly IEnumerable<INotificationChannel> _channels;
 
-    // DIP: Primim lista de canale prin DI - putem injecta SMS, Email, Push
     public NotificationService(INotificationRepository repo, IEnumerable<INotificationChannel> channels)
     {
         _repo     = repo;
@@ -23,7 +19,6 @@ public class NotificationService : INotificationService
 
     public async Task<NotificationResponseDto> SendAsync(SendNotificationDto dto)
     {
-        // Gasim canalul potrivit - OCP in actiune
         var channel = _channels.FirstOrDefault(c =>
             c.ChannelName.Equals(dto.Channel, StringComparison.OrdinalIgnoreCase));
 
@@ -59,13 +54,11 @@ public class NotificationService : INotificationService
     };
 }
 
-// OCP: Implementari concrete ale canalelor - adaugam noi canale fara sa modificam nimic
 public class EmailChannel : INotificationChannel
 {
     public string ChannelName => "Email";
     public async Task<bool> SendAsync(int recipientId, string message)
     {
-        // In Lab 3 (Adapter pattern) vom integra un serviciu real de email
         Console.WriteLine($"[EMAIL] → Recipient {recipientId}: {message}");
         await Task.CompletedTask;
         return true;

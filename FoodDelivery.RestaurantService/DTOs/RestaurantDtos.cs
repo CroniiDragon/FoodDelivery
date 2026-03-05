@@ -1,6 +1,3 @@
-// ═══════════════════════════════════════════════════════
-// DTOs/RestaurantDtos.cs
-// ═══════════════════════════════════════════════════════
 namespace FoodDelivery.RestaurantService.DTOs;
 
 public class CreateRestaurantDto
@@ -18,15 +15,15 @@ public class CreateMenuItemDto
     public string  Description  { get; set; } = string.Empty;
     public decimal BasePrice    { get; set; }
     public string  Category     { get; set; } = string.Empty;
-    public string  ItemType     { get; set; } = "Food"; // "Food" sau "Drink"
+    public string  ItemType     { get; set; } = "Food"; // "Food" or "Drink"
     public int     RestaurantId { get; set; }
 
-    // Campuri specifice FoodItem
+    // specific for FoodItem
     public int?  Calories     { get; set; }
     public bool? IsVegetarian { get; set; }
     public bool? IsVegan      { get; set; }
 
-    // Campuri specifice DrinkItem
+    // Specific for DrinkItem
     public double? VolumeInLiters { get; set; }
     public bool?   IsAlcoholic    { get; set; }
 }

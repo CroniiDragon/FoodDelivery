@@ -1,4 +1,3 @@
-// ════ DTOs/NotificationDtos.cs ═════════════════════════════
 namespace FoodDelivery.NotificationService.DTOs;
 
 public class SendNotificationDto

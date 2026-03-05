@@ -3,9 +3,6 @@ using FoodDelivery.UserService.Interfaces;
 using FoodDelivery.UserService.Models;
 
 namespace FoodDelivery.UserService.Services;
-
-// SRP: Responsabilitate unica - logica de business pentru utilizatori
-// DIP: Depinde de IUserRepository (abstractizare), nu de implementarea concreta
 public class UserService : IUserService
 {
     private readonly IUserRepository _repository;
@@ -25,7 +22,6 @@ public class UserService : IUserService
             DeliveryAddress = dto.DeliveryAddress,
             City            = dto.City,
         };
-        // Encapsulare: parola se hasheaza prin metoda modelului
         customer.SetPassword(dto.Password);
 
         var saved = await _repository.AddAsync(customer);
@@ -56,7 +52,6 @@ public class UserService : IUserService
     public async Task<IEnumerable<UserResponseDto>> GetAllAsync()
     {
         var users = await _repository.GetAllAsync();
-        // OOP: Polimorfism - MapToDto apeleaza GetRole() diferit pentru Customer/Courier
         return users.Select(MapToDto);
     }
 
@@ -75,14 +70,13 @@ public class UserService : IUserService
         return true;
     }
 
-    // OOP: Polimorfism - GetRole() se comporta diferit pentru Customer vs Courier
     private static UserResponseDto MapToDto(Models.User user) => new()
     {
         Id        = user.Id,
         Name      = user.Name,
         Email     = user.Email,
         Phone     = user.Phone,
-        Role      = user.GetRole(),   // polimorfism
+        Role      = user.GetRole(),
         IsActive  = user.IsActive,
         CreatedAt = user.CreatedAt,
     };

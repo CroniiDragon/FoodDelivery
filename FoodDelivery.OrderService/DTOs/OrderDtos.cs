@@ -1,4 +1,3 @@
-// ════════════════ DTOs/OrderDtos.cs ════════════════════════
 namespace FoodDelivery.OrderService.DTOs;
 
 public class CreateOrderDto

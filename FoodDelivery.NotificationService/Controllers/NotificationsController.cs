@@ -5,8 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FoodDelivery.NotificationService.Controllers;
 
-// SRP: Responsabilitate unica - primeste requesturi HTTP si returneaza raspunsuri
-// DIP: Depinde de INotificationService, nu de implementarea concreta
 [ApiController]
 [Route("api/[controller]")]
 public class NotificationsController : ControllerBase
@@ -19,7 +17,7 @@ public class NotificationsController : ControllerBase
     }
 
     // POST api/notifications
-    // Trimite o notificare prin canalul specificat (Email / SMS / Push)
+    // Send notification, channel (Email / SMS / Push)
     [HttpPost]
     public async Task<ActionResult<ApiResponse<NotificationResponseDto>>> Send(
         [FromBody] SendNotificationDto dto)
@@ -29,7 +27,7 @@ public class NotificationsController : ControllerBase
     }
 
     // GET api/notifications/recipient/{recipientId}
-    // Returneaza toate notificarile trimise unui utilizator
+    // Return all notification for this user
     [HttpGet("recipient/{recipientId}")]
     public async Task<ActionResult<ApiResponse<IEnumerable<NotificationResponseDto>>>> GetByRecipient(
         int recipientId)

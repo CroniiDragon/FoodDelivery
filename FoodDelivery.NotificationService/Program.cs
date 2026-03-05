@@ -12,7 +12,6 @@ builder.Services.AddDbContext<NotificationDbContext>(options =>
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<INotificationService,    NotificationService>();
 
-// OCP + DIP: Inregistram toate canalele - putem adauga noi canale fara sa modificam nimic
 builder.Services.AddScoped<INotificationChannel, EmailChannel>();
 builder.Services.AddScoped<INotificationChannel, SmsChannel>();
 builder.Services.AddScoped<INotificationChannel, PushChannel>();

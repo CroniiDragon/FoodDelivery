@@ -1,4 +1,3 @@
-// ════════════════ Interfaces/IOrderInterfaces.cs ══════════
 using FoodDelivery.Shared.Interfaces;
 using FoodDelivery.OrderService.DTOs;
 using FoodDelivery.OrderService.Models;
@@ -12,7 +11,6 @@ public interface IOrderRepository : IBaseRepository<Order>
     Task<Order?> GetWithItemsAsync(int orderId);
 }
 
-// DIP: Controller-ul depinde de aceasta interfata
 public interface IOrderService
 {
     Task<OrderResponseDto> CreateAsync(CreateOrderDto dto);

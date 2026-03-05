@@ -3,8 +3,6 @@ using FoodDelivery.RestaurantService.Interfaces;
 using FoodDelivery.RestaurantService.Models;
 
 namespace FoodDelivery.RestaurantService.Services;
-
-// SRP + DIP
 public class RestaurantService : IRestaurantService
 {
     private readonly IRestaurantRepository _repo;
@@ -62,8 +60,6 @@ public class MenuItemService : IMenuItemService
 
     public async Task<MenuItemResponseDto> CreateAsync(CreateMenuItemDto dto)
     {
-        // OCP: adaugam noi tipuri fara sa modificam aceasta metoda
-        // OOP: Polimorfism - cream tipul corect bazat pe ItemType
         MenuItem item = dto.ItemType == "Drink"
             ? new DrinkItem
             {
@@ -99,14 +95,13 @@ public class MenuItemService : IMenuItemService
         return true;
     }
 
-    // OOP: Polimorfism - GetFinalPrice() si GetItemType() se comporta diferit
     private static MenuItemResponseDto MapToDto(MenuItem m) => new()
     {
         Id           = m.Id,
         Name         = m.Name,
         Description  = m.Description,
-        FinalPrice   = m.GetFinalPrice(),  // polimorfism
-        ItemType     = m.GetItemType(),    // polimorfism
+        FinalPrice   = m.GetFinalPrice(),
+        ItemType     = m.GetItemType(),
         Category     = m.Category,
         IsAvailable  = m.IsAvailable,
         RestaurantId = m.RestaurantId,

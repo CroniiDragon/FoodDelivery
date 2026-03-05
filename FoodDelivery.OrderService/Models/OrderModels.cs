@@ -1,9 +1,7 @@
-// ═══════════════════ Models/Order.cs ═══════════════════════
 using FoodDelivery.Shared.Models;
 
 namespace FoodDelivery.OrderService.Models;
 
-// SRP: Gestioneaza doar datele unei comenzi
 public class Order : BaseEntity
 {
     public int    CustomerId      { get; set; }
@@ -15,10 +13,9 @@ public class Order : BaseEntity
     public int?   CourierId       { get; set; }
     public string? Notes          { get; set; }
 
-    // Relatia One-to-Many
+    // relation One-to-Many
     public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
 
-    // OOP: Encapsulare - calculul pretului nu se face din afara
     public decimal GetTotalPrice() => Items.Sum(i => i.TotalPrice) + DeliveryFee;
 }
 

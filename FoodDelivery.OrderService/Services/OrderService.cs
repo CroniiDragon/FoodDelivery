@@ -3,8 +3,6 @@ using FoodDelivery.OrderService.Interfaces;
 using FoodDelivery.OrderService.Models;
 
 namespace FoodDelivery.OrderService.Services;
-
-// SRP + DIP
 public class OrderService : IOrderService
 {
     private readonly IOrderRepository _repo;
