@@ -1,4 +1,5 @@
 using FoodDelivery.NotificationService.Data;
+using FoodDelivery.NotificationService.Factories;
 using FoodDelivery.NotificationService.Interfaces;
 using FoodDelivery.NotificationService.Repositories;
 using FoodDelivery.NotificationService.Services;
@@ -12,10 +13,14 @@ builder.Services.AddDbContext<NotificationDbContext>(options =>
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<INotificationService,    NotificationService>();
 
-// OCP + DIP: Inregistram toate canalele - putem adauga noi canale fara sa modificam nimic
 builder.Services.AddScoped<INotificationChannel, EmailChannel>();
 builder.Services.AddScoped<INotificationChannel, SmsChannel>();
 builder.Services.AddScoped<INotificationChannel, PushChannel>();
+
+//Factory Method
+builder.Services.AddScoped<INotificationMessageFactory, EmailMessageFactory>();
+builder.Services.AddScoped<INotificationMessageFactory, SmsMessageFactory>();
+builder.Services.AddScoped<INotificationMessageFactory, PushMessageFactory>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -26,11 +31,8 @@ builder.Services.AddCors(o =>
     o.AddPolicy("AllowAll", p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
 
 var app = builder.Build();
-
 if (app.Environment.IsDevelopment()) { app.UseSwagger(); app.UseSwaggerUI(); }
-
 app.UseCors("AllowAll");
-app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();

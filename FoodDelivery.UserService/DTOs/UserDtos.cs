@@ -1,8 +1,4 @@
 namespace FoodDelivery.UserService.DTOs;
-
-// DTO-urile nu expun date sensibile (ex: PasswordHash)
-// SRP: Fiecare DTO are un singur scop
-
 public class CreateCustomerDto
 {
     public string Name { get; set; } = string.Empty;

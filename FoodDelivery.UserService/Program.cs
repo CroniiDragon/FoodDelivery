@@ -6,12 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ── 1. Baza de date EF Core + SQL Server ─────────────────────────
+// ── 1. DB EF Core + SQL Server ─────────────────────────
 builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("UserDb")));
 
-// ── 2. Injectie de dependente (DIP din SOLID) ─────────────────────
-// Spunem ASP.NET: "Cand cineva cere IUserRepository, da-i UserRepository"
+// ── 2. (DIP from SOLID) ─────────────────────
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService,    UserService>();
 

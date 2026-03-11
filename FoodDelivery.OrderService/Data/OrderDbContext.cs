@@ -30,7 +30,7 @@ public class OrderDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.ItemName).HasMaxLength(150);
             entity.Property(e => e.UnitPrice).HasPrecision(10, 2);
-            entity.Ignore(e => e.TotalPrice); // proprietate calculata, nu coloana DB
+            entity.Ignore(e => e.TotalPrice); // calculated, not column in DB
 
             entity.HasOne(e => e.Order)
                   .WithMany(o => o.Items)

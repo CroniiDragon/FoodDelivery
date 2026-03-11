@@ -4,8 +4,6 @@ using FoodDelivery.RestaurantService.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace FoodDelivery.RestaurantService.Repositories;
-
-// SRP + DIP
 public class RestaurantRepository : IRestaurantRepository
 {
     private readonly RestaurantDbContext _context;

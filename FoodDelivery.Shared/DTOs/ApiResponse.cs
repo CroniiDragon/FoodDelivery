@@ -1,7 +1,5 @@
 namespace FoodDelivery.Shared.DTOs;
 
-// Format standard de raspuns pentru TOATE microserviciile
-// SRP: Responsabilitate unica - structura raspunsului HTTP
 public class ApiResponse<T>
 {
     public bool Success { get; set; }

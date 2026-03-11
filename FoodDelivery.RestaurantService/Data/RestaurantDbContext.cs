@@ -15,8 +15,7 @@ public class RestaurantDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // TPH (Table Per Hierarchy) - FoodItem si DrinkItem in acelasi tabel MenuItems
-        // EF Core foloseste o coloana discriminator pentru a sti ce tip este
+        // TPH (Table Per Hierarchy) - FoodItem and DrinkItem in table MenuItems
         modelBuilder.Entity<MenuItem>(entity =>
         {
             entity.ToTable("MenuItems");
@@ -30,7 +29,7 @@ public class RestaurantDbContext : DbContext
                   .HasForeignKey(e => e.RestaurantId)
                   .OnDelete(DeleteBehavior.Cascade);
 
-            // Coloana discriminator pentru TPH
+            // Discriminator xolumn for TPH
             entity.HasDiscriminator<string>("ItemType")
                   .HasValue<FoodItem>("Food")
                   .HasValue<DrinkItem>("Drink");

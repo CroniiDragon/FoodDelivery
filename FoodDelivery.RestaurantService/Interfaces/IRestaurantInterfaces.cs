@@ -3,9 +3,6 @@ using FoodDelivery.RestaurantService.DTOs;
 using FoodDelivery.RestaurantService.Models;
 
 namespace FoodDelivery.RestaurantService.Interfaces;
-
-// ISP: Interfete mici si specifice
-
 public interface IRestaurantRepository : IBaseRepository<Restaurant>
 {
     Task<IEnumerable<Restaurant>> GetByCityAsync(string city);
@@ -19,7 +16,6 @@ public interface IMenuItemRepository : IBaseRepository<MenuItem>
     Task<IEnumerable<MenuItem>> GetAvailableByRestaurantAsync(int restaurantId);
 }
 
-// DIP: Service-ul depinde de aceasta interfata
 public interface IRestaurantService
 {
     Task<RestaurantResponseDto> CreateAsync(CreateRestaurantDto dto);
@@ -27,6 +23,9 @@ public interface IRestaurantService
     Task<IEnumerable<RestaurantResponseDto>> GetAllAsync();
     Task<IEnumerable<RestaurantResponseDto>> GetOpenInCityAsync(string city);
     Task<bool> DeleteAsync(int id);
+
+    Task<RestaurantResponseDto> CloneBranchAsync(int sourceId);
+    Task<RestaurantResponseDto> CloneSeasonalAsync(int sourceId);
 }
 
 public interface IMenuItemService

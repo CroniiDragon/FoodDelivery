@@ -1,4 +1,3 @@
-// ═══════════════════════ Program.cs ═══════════════════════
 using FoodDelivery.RestaurantService.Data;
 using FoodDelivery.RestaurantService.Interfaces;
 using FoodDelivery.RestaurantService.Repositories;

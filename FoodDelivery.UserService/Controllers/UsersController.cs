@@ -5,8 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FoodDelivery.UserService.Controllers;
 
-// SRP: Responsabilitate unica - primeste requesturi HTTP si returneaza raspunsuri
-// DIP: Depinde de IUserService, nu de implementarea concreta
 [ApiController]
 [Route("api/[controller]")]
 public class UsersController : ControllerBase

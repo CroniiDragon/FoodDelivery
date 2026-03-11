@@ -4,14 +4,10 @@ using FoodDelivery.UserService.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace FoodDelivery.UserService.Repositories;
-
-// DIP: Implementarea concreta a IUserRepository
-// SRP: Responsabilitate unica - acces la date pentru utilizatori
 public class UserRepository : IUserRepository
 {
     private readonly UserDbContext _context;
 
-    // DIP: Injectam contextul prin constructor
     public UserRepository(UserDbContext context)
     {
         _context = context;
@@ -19,7 +15,7 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> GetByIdAsync(int id)
     {
-        // Cautam in ambele tabele
+        // search from this 2 tables
         User? user = await _context.Customers.FindAsync(id);
         return user ?? await _context.Couriers.FindAsync(id);
     }
@@ -70,7 +66,7 @@ public class UserRepository : IUserRepository
         var user = await GetByIdAsync(id);
         if (user != null)
         {
-            // Soft delete - nu stergem din baza de date
+            // Soft delete ??
             user.IsDeleted = true;
             user.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();

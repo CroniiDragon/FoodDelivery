@@ -59,11 +59,20 @@ namespace FoodDelivery.OrderService.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("PaymentReceipt")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PaymentSuccess")
+                        .HasColumnType("bit");
+
                     b.Property<int>("RestaurantId")
                         .HasColumnType("int");
 
                     b.Property<string>("Status")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TransactionId")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedAt")

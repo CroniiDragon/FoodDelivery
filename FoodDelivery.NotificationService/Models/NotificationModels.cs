@@ -1,9 +1,7 @@
-// ═══════════ Models/Notification.cs ═══════════════════════
 using FoodDelivery.Shared.Models;
 
 namespace FoodDelivery.NotificationService.Models;
 
-// SRP: Gestioneaza doar datele unei notificari
 public class Notification : BaseEntity
 {
     public int    RecipientId   { get; set; }
@@ -15,5 +13,4 @@ public class Notification : BaseEntity
     public string? ErrorMessage { get; set; }
 }
 
-// OCP: Enum extensibil - adaugam canale noi fara sa modificam codul existent
 public enum NotificationChannel { SMS, Email, Push }
