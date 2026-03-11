@@ -1,30 +1,33 @@
+using FoodDelivery.OrderService.Builder;
 using FoodDelivery.OrderService.DTOs;
 using FoodDelivery.OrderService.Interfaces;
 using FoodDelivery.OrderService.Models;
 
 namespace FoodDelivery.OrderService.Services;
+
 public class OrderService : IOrderService
 {
     private readonly IOrderRepository _repo;
+
     public OrderService(IOrderRepository repo) => _repo = repo;
 
     public async Task<OrderResponseDto> CreateAsync(CreateOrderDto dto)
     {
-        var order = new Order
-        {
-            CustomerId      = dto.CustomerId,
-            RestaurantId    = dto.RestaurantId,
-            DeliveryAddress = dto.DeliveryAddress,
-            PaymentMethod   = dto.PaymentMethod,
-            Notes           = dto.Notes,
-            Items = dto.Items.Select(i => new OrderItem
-            {
-                MenuItemId = i.MenuItemId,
-                ItemName   = i.ItemName,
-                Quantity   = i.Quantity,
-                UnitPrice  = i.UnitPrice,
-            }).ToList()
-        };
+        var builder  = new OrderBuilder();
+        var director = new OrderDirector(builder);
+
+        var items = dto.Items
+            .Select(i => (i.MenuItemId, i.ItemName, i.Quantity, i.UnitPrice))
+            .ToList();
+
+        // Director decides construction steps based on order type
+        var order = dto.IsExpress
+            ? director.BuildExpressOrder(dto.CustomerId, dto.RestaurantId, dto.DeliveryAddress, dto.PaymentMethod, items)
+            : director.BuildStandardOrder(dto.CustomerId, dto.RestaurantId, dto.DeliveryAddress, dto.PaymentMethod, items);
+
+        if (!string.IsNullOrWhiteSpace(dto.Notes) && !dto.IsExpress)
+            order.Notes = dto.Notes;
+
         var saved = await _repo.AddAsync(order);
         return MapToDto(saved);
     }
@@ -53,7 +56,7 @@ public class OrderService : IOrderService
     {
         var order = await _repo.GetByIdAsync(orderId);
         if (order == null) return false;
-        if (order.Status == OrderStatus.OutForDelivery || order.Status == OrderStatus.Delivered)
+        if (order.Status is OrderStatus.OutForDelivery or OrderStatus.Delivered)
             return false;
         order.Status = OrderStatus.Cancelled;
         await _repo.UpdateAsync(order);
@@ -70,12 +73,13 @@ public class OrderService : IOrderService
         PaymentMethod   = o.PaymentMethod,
         DeliveryAddress = o.DeliveryAddress,
         CreatedAt       = o.CreatedAt,
+        Notes           = o.Notes,
         Items           = o.Items.Select(i => new OrderItemDto
         {
             ItemName   = i.ItemName,
             Quantity   = i.Quantity,
             UnitPrice  = i.UnitPrice,
             TotalPrice = i.TotalPrice,
-        }).ToList()
+        }).ToList(),
     };
 }
