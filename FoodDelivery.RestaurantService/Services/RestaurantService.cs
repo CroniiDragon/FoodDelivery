@@ -1,25 +1,47 @@
 using FoodDelivery.RestaurantService.DTOs;
 using FoodDelivery.RestaurantService.Interfaces;
 using FoodDelivery.RestaurantService.Models;
+using FoodDelivery.RestaurantService.Prototype;
 
 namespace FoodDelivery.RestaurantService.Services;
+
 public class RestaurantService : IRestaurantService
 {
     private readonly IRestaurantRepository _repo;
+
     public RestaurantService(IRestaurantRepository repo) => _repo = repo;
 
     public async Task<RestaurantResponseDto> CreateAsync(CreateRestaurantDto dto)
     {
         var r = new Restaurant
         {
-            Name        = dto.Name,
-            Address     = dto.Address,
-            City        = dto.City,
-            Cuisine     = dto.Cuisine,
+            Name = dto.Name,
+            Address = dto.Address,
+            City = dto.City,
+            Cuisine = dto.Cuisine,
             PhoneNumber = dto.PhoneNumber,
         };
-        var saved = await _repo.AddAsync(r);
-        return MapToDto(saved);
+        return MapToDto(await _repo.AddAsync(r));
+    }
+
+    // Prototype — shallow: new branch, no menu
+    public async Task<RestaurantResponseDto> CloneBranchAsync(int sourceId)
+    {
+        var source = await _repo.GetWithMenuAsync(sourceId)
+            ?? throw new KeyNotFoundException($"Restaurant {sourceId} not found.");
+
+        var clone = new RestaurantPrototype(source).ShallowClone();
+        return MapToDto(await _repo.AddAsync(clone));
+    }
+
+    // Prototype — deep: full copy with all menu items
+    public async Task<RestaurantResponseDto> CloneSeasonalAsync(int sourceId)
+    {
+        var source = await _repo.GetWithMenuAsync(sourceId)
+            ?? throw new KeyNotFoundException($"Restaurant {sourceId} not found.");
+
+        var clone = new RestaurantPrototype(source).DeepClone();
+        return MapToDto(await _repo.AddAsync(clone));
     }
 
     public async Task<RestaurantResponseDto?> GetByIdAsync(int id)
@@ -43,12 +65,12 @@ public class RestaurantService : IRestaurantService
 
     private static RestaurantResponseDto MapToDto(Restaurant r) => new()
     {
-        Id            = r.Id,
-        Name          = r.Name,
-        Address       = r.Address,
-        City          = r.City,
-        Cuisine       = r.Cuisine,
-        IsOpen        = r.IsOpen,
+        Id = r.Id,
+        Name = r.Name,
+        Address = r.Address,
+        City = r.City,
+        Cuisine = r.Cuisine,
+        IsOpen = r.IsOpen,
         MenuItemCount = r.MenuItems?.Count ?? 0,
     };
 }
@@ -56,6 +78,7 @@ public class RestaurantService : IRestaurantService
 public class MenuItemService : IMenuItemService
 {
     private readonly IMenuItemRepository _repo;
+
     public MenuItemService(IMenuItemRepository repo) => _repo = repo;
 
     public async Task<MenuItemResponseDto> CreateAsync(CreateMenuItemDto dto)
@@ -64,19 +87,19 @@ public class MenuItemService : IMenuItemService
             ? new DrinkItem
             {
                 VolumeInLiters = dto.VolumeInLiters ?? 0.5,
-                IsAlcoholic    = dto.IsAlcoholic ?? false,
+                IsAlcoholic = dto.IsAlcoholic ?? false,
             }
             : new FoodItem
             {
-                Calories     = dto.Calories ?? 0,
+                Calories = dto.Calories ?? 0,
                 IsVegetarian = dto.IsVegetarian ?? false,
-                IsVegan      = dto.IsVegan ?? false,
+                IsVegan = dto.IsVegan ?? false,
             };
 
-        item.Name         = dto.Name;
-        item.Description  = dto.Description;
-        item.BasePrice    = dto.BasePrice;
-        item.Category     = dto.Category;
+        item.Name = dto.Name;
+        item.Description = dto.Description;
+        item.BasePrice = dto.BasePrice;
+        item.Category = dto.Category;
         item.RestaurantId = dto.RestaurantId;
 
         var saved = await _repo.AddAsync(item);
@@ -97,13 +120,13 @@ public class MenuItemService : IMenuItemService
 
     private static MenuItemResponseDto MapToDto(MenuItem m) => new()
     {
-        Id           = m.Id,
-        Name         = m.Name,
-        Description  = m.Description,
-        FinalPrice   = m.GetFinalPrice(),
-        ItemType     = m.GetItemType(),
-        Category     = m.Category,
-        IsAvailable  = m.IsAvailable,
+        Id = m.Id,
+        Name = m.Name,
+        Description = m.Description,
+        FinalPrice = m.GetFinalPrice(),
+        ItemType = m.GetItemType(),
+        Category = m.Category,
+        IsAvailable = m.IsAvailable,
         RestaurantId = m.RestaurantId,
     };
 }

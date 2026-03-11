@@ -23,6 +23,9 @@ public interface IRestaurantService
     Task<IEnumerable<RestaurantResponseDto>> GetAllAsync();
     Task<IEnumerable<RestaurantResponseDto>> GetOpenInCityAsync(string city);
     Task<bool> DeleteAsync(int id);
+
+    Task<RestaurantResponseDto> CloneBranchAsync(int sourceId);
+    Task<RestaurantResponseDto> CloneSeasonalAsync(int sourceId);
 }
 
 public interface IMenuItemService
