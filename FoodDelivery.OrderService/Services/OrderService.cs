@@ -1,34 +1,52 @@
 using FoodDelivery.OrderService.Builder;
 using FoodDelivery.OrderService.DTOs;
+using FoodDelivery.OrderService.Facade;
 using FoodDelivery.OrderService.Interfaces;
 using FoodDelivery.OrderService.Models;
+using FoodDelivery.OrderService.Observer;
+using FoodDelivery.OrderService.State;
+using FoodDelivery.OrderService.Strategy;
 
 namespace FoodDelivery.OrderService.Services;
 
 public class OrderService : IOrderService
 {
-    private readonly IOrderRepository _repo;
+    private readonly IOrderRepository    _repo;
+    private readonly OrderStatusSubject  _subject;
+    private readonly DeliveryContext     _delivery;
 
-    public OrderService(IOrderRepository repo) => _repo = repo;
+    public OrderService(IOrderRepository repo, OrderStatusSubject subject, DeliveryContext delivery)
+    {
+        _repo     = repo;
+        _subject  = subject;
+        _delivery = delivery;
+    }
 
     public async Task<OrderResponseDto> CreateAsync(CreateOrderDto dto)
     {
-        var builder  = new OrderBuilder();
-        var director = new OrderDirector(builder);
+        // Builder — constructs and validates the order step by step
+        var builder = new OrderBuilder()
+            .ForCustomer(dto.CustomerId)
+            .FromRestaurant(dto.RestaurantId)
+            .DeliverTo(dto.DeliveryAddress)
+            .WithPayment(dto.PaymentMethod)
+            .WithNote(dto.Notes ?? string.Empty);
 
-        var items = dto.Items
-            .Select(i => (i.MenuItemId, i.ItemName, i.Quantity, i.UnitPrice))
-            .ToList();
+        // Strategy — calculate delivery fee based on selected strategy
+        var city = dto.DeliveryAddress.Split(',').LastOrDefault()?.Trim() ?? "Chișinău";
+        var itemsTotal = dto.Items.Sum(i => i.UnitPrice * i.Quantity);
+        var fee = _delivery.GetDeliveryFee(itemsTotal, city);
+        builder.WithDeliveryFee(fee);
 
-        // Director decides construction steps based on order type
-        var order = dto.IsExpress
-            ? director.BuildExpressOrder(dto.CustomerId, dto.RestaurantId, dto.DeliveryAddress, dto.PaymentMethod, items)
-            : director.BuildStandardOrder(dto.CustomerId, dto.RestaurantId, dto.DeliveryAddress, dto.PaymentMethod, items);
+        foreach (var i in dto.Items)
+            builder.AddItem(i.MenuItemId, i.ItemName, i.Quantity, i.UnitPrice);
 
-        if (!string.IsNullOrWhiteSpace(dto.Notes) && !dto.IsExpress)
-            order.Notes = dto.Notes;
-
+        var order = builder.Build();
         var saved = await _repo.AddAsync(order);
+
+        // Observer — notify all subscribers about new order
+        await _subject.NotifyAsync(saved.Id, "Pending", saved.CustomerId, saved.CourierId);
+
         return MapToDto(saved);
     }
 
@@ -45,10 +63,18 @@ public class OrderService : IOrderService
     {
         var order = await _repo.GetByIdAsync(orderId);
         if (order == null) return;
-        if (Enum.TryParse<OrderStatus>(status, out var parsed))
+
+        // State — transition through allowed states only
+        var ctx = new OrderStateContext(orderId, $"Customer#{order.CustomerId}");
+        ApplyStateTransition(ctx, status);
+
+        if (Enum.TryParse<OrderStatus>(ctx.CurrentStatus, out var parsed))
         {
             order.Status = parsed;
             await _repo.UpdateAsync(order);
+
+            // Observer — notify all subscribers about status change
+            await _subject.NotifyAsync(orderId, ctx.CurrentStatus, order.CustomerId, order.CourierId);
         }
     }
 
@@ -58,9 +84,25 @@ public class OrderService : IOrderService
         if (order == null) return false;
         if (order.Status is OrderStatus.OutForDelivery or OrderStatus.Delivered)
             return false;
+
         order.Status = OrderStatus.Cancelled;
         await _repo.UpdateAsync(order);
+
+        // Observer — notify cancellation
+        await _subject.NotifyAsync(orderId, "Cancelled", order.CustomerId, order.CourierId);
         return true;
+    }
+
+    private static void ApplyStateTransition(OrderStateContext ctx, string target)
+    {
+        switch (target)
+        {
+            case "Confirmed":      ctx.Confirm();            break;
+            case "Preparing":      ctx.StartPreparing();     break;
+            case "OutForDelivery": ctx.SendOutForDelivery(); break;
+            case "Delivered":      ctx.MarkDelivered();      break;
+            case "Cancelled":      ctx.Cancel();             break;
+        }
     }
 
     private static OrderResponseDto MapToDto(Order o) => new()
