@@ -10,8 +10,8 @@ public interface IPrototype<T>
 }
 
 // Prototype for Restaurant
-// ShallowClone → new restaurant (same cuisine/city), empty menu
-// DeepClone    → new restaurant with full menu copied (seasonal variant)
+// ShallowClone new restaurant (same cuisine/city), empty menu
+// DeepClone    new restaurant with full menu copied (seasonal variant)
 public class RestaurantPrototype : IPrototype<Restaurant>
 {
     private readonly Restaurant _source;
