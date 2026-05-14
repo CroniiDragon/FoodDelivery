@@ -1,137 +1,157 @@
-import { useEffect, useState } from 'react'
-import { Bell, Send, Mail, MessageSquare, Smartphone } from 'lucide-react'
-import toast from 'react-hot-toast'
-import { notificationApi, userApi } from '../services/api'
-import { LoadingSpinner, EmptyState } from '../components/ui'
-import type { NotificationResponse, UserResponse } from '../types'
+import { useState } from 'react'
+import { notificationApi } from '../services/api'
+import type { NotificationResponse, SendNotificationDto } from '../types'
+
+const CHANNELS = ['Email', 'SMS', 'Push']
 
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<NotificationResponse[]>([])
-  const [users, setUsers]                 = useState<UserResponse[]>([])
   const [loading, setLoading]             = useState(false)
-  const [recipientId, setRecipientId]     = useState<string>('')
-  const [channel, setChannel]             = useState('Email')
-  const [message, setMessage]             = useState('')
-  const [sending, setSending]             = useState(false)
+  const [recipientId, setRecipientId]     = useState(1)
+  const [form, setForm] = useState<SendNotificationDto>({
+    recipientId: 1, recipientType: 'Customer', channel: 'Push', message: ''
+  })
+  const [sendMsg, setSendMsg] = useState('')
+  const [error, setError]     = useState('')
 
-  useEffect(() => {
-    userApi.getAll().then(setUsers).catch(() => {})
-  }, [])
-
-  const loadNotifications = async (uid: string) => {
-    if (!uid) return
+  async function fetchNotifications() {
     setLoading(true)
-    try { setNotifications(await notificationApi.getByRecipient(Number(uid))) }
-    catch { toast.error('Eroare la încărcare.') }
-    finally { setLoading(false) }
-  }
-
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!recipientId) { toast.error('Selectează un destinatar.'); return }
-    const user = users.find(u => u.id === Number(recipientId))
-    setSending(true)
+    setError('')
     try {
-      const n = await notificationApi.send({
-        recipientId: Number(recipientId),
-        recipientType: user?.role ?? 'Customer',
-        channel,
-        message,
-      })
-      setNotifications(p => [n, ...p])
-      setMessage('')
-      toast.success('Notificare trimisă!')
-    } catch { toast.error('Eroare la trimitere.') }
-    finally { setSending(false) }
+      setNotifications(await notificationApi.getByRecipient(recipientId))
+    } catch {
+      setError('Could not load notifications.')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const channelIcon = (ch: string) => {
-    if (ch === 'Email') return <Mail size={14} className="text-blue-400" />
-    if (ch === 'SMS')   return <MessageSquare size={14} className="text-green-400" />
-    return <Smartphone size={14} className="text-brand-400" />
+  async function handleSend() {
+    setSendMsg('')
+    setError('')
+    try {
+      await notificationApi.send({ ...form, recipientId })
+      setSendMsg('✓ Notification sent.')
+      fetchNotifications()
+    } catch (e: any) {
+      setError(e?.response?.data?.errors?.[0] ?? 'Send failed — check Chain validation.')
+    }
   }
 
   return (
-    <div className="page-container">
-      <div className="mb-6">
-        <h1 className="section-title mb-0">Notificări</h1>
-        <p className="text-white/40 text-sm mt-1">Trimite notificări utilizatorilor platformei</p>
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl font-bold text-white">Notifications</h1>
+
+      {/* Send form */}
+      <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-4">
+        <h2 className="text-white font-semibold">Send Notification</h2>
+        <p className="text-xs text-gray-500">Passes through Chain of Responsibility before sending.</p>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs text-gray-400 block mb-1">Recipient ID</label>
+            <input
+              type="number" min={1}
+              value={recipientId}
+              onChange={e => setRecipientId(Number(e.target.value))}
+              className="w-full px-3 py-2 rounded bg-white/10 text-white text-sm border border-white/20 focus:outline-none focus:border-orange-500"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-gray-400 block mb-1">Recipient Type</label>
+            <select
+              value={form.recipientType}
+              onChange={e => setForm(f => ({ ...f, recipientType: e.target.value }))}
+              className="w-full px-3 py-2 rounded bg-white/10 text-white text-sm border border-white/20 focus:outline-none focus:border-orange-500"
+            >
+              <option value="Customer">Customer</option>
+              <option value="Courier">Courier</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label className="text-xs text-gray-400 block mb-1">Channel</label>
+          <div className="flex gap-2">
+            {CHANNELS.map(c => (
+              <button
+                key={c}
+                onClick={() => setForm(f => ({ ...f, channel: c }))}
+                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                  form.channel === c
+                    ? 'bg-orange-500 text-white'
+                    : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="text-xs text-gray-400 block mb-1">Message</label>
+          <textarea
+            rows={3}
+            value={form.message}
+            onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
+            placeholder="Enter notification message..."
+            className="w-full px-3 py-2 rounded bg-white/10 text-white text-sm border border-white/20 focus:outline-none focus:border-orange-500 resize-none"
+          />
+        </div>
+
+        <button
+          onClick={handleSend}
+          disabled={!form.message.trim()}
+          className="px-5 py-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white rounded text-sm font-medium transition-colors"
+        >
+          Send
+        </button>
+
+        {sendMsg && <p className="text-green-400 text-sm">{sendMsg}</p>}
+        {error   && <p className="text-red-400 text-sm">{error}</p>}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-        {/* Send form */}
-        <div className="card p-6">
-          <h2 className="font-display font-bold text-white mb-5 flex items-center gap-2">
-            <Send size={18} className="text-brand-400" /> Trimite Notificare
-          </h2>
-          <form onSubmit={handleSend} className="space-y-4">
-            <div>
-              <label className="block text-white/60 text-sm mb-1.5">Destinatar</label>
-              <select className="input" required value={recipientId}
-                onChange={e => { setRecipientId(e.target.value); loadNotifications(e.target.value) }}>
-                <option value="">— selectează utilizator —</option>
-                {users.map(u => (
-                  <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-white/60 text-sm mb-1.5">Canal</label>
-              <div className="grid grid-cols-3 gap-2">
-                {['Email','SMS','Push'].map(ch => (
-                  <button key={ch} type="button"
-                    onClick={() => setChannel(ch)}
-                    className={`py-2.5 rounded-xl border text-sm font-medium transition-all
-                      ${channel === ch
-                        ? 'bg-brand-500/20 border-brand-500/40 text-brand-400'
-                        : 'bg-white/3 border-white/10 text-white/50 hover:text-white/70'}`}>
-                    {ch}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label className="block text-white/60 text-sm mb-1.5">Mesaj</label>
-              <textarea rows={4} required className="input resize-none" value={message}
-                placeholder="Scrie mesajul notificării..."
-                onChange={e => setMessage(e.target.value)} />
-            </div>
-            <button type="submit" disabled={sending} className="btn-primary w-full flex items-center justify-center gap-2">
-              <Send size={15} /> {sending ? 'Se trimite...' : 'Trimite Notificare'}
-            </button>
-          </form>
+      {/* History */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-3">
+          <h2 className="text-white font-semibold">History for recipient #{recipientId}</h2>
+          <button
+            onClick={fetchNotifications}
+            className="px-3 py-1 bg-white/10 hover:bg-white/20 text-gray-300 rounded text-xs"
+          >
+            Load
+          </button>
         </div>
 
-        {/* Notifications history */}
-        <div className="card p-6">
-          <h2 className="font-display font-bold text-white mb-5 flex items-center gap-2">
-            <Bell size={18} className="text-brand-400" /> Istoric Notificări
-          </h2>
-          {loading ? <LoadingSpinner text="Se încarcă..." />
-            : notifications.length === 0
-            ? <EmptyState title="Nicio notificare" sub="Selectează un utilizator sau trimite prima notificare." />
-            : <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
-                {notifications.map(n => (
-                  <div key={n.id} className="bg-white/3 border border-white/5 rounded-xl p-3">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <div className="flex items-center gap-2">
-                        {channelIcon(n.channel)}
-                        <span className="text-white/60 text-xs font-medium">{n.channel}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${n.isSent ? 'bg-green-400' : 'bg-red-400'}`} />
-                        <span className="text-white/30 text-xs">
-                          {new Date(n.createdAt).toLocaleString('ro-RO', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}
-                        </span>
-                      </div>
-                    </div>
-                    <p className="text-white/80 text-sm">{n.message}</p>
-                  </div>
-                ))}
+        {loading ? (
+          <p className="text-gray-400 animate-pulse text-sm">Loading...</p>
+        ) : notifications.length === 0 ? (
+          <p className="text-gray-500 text-sm">No notifications found.</p>
+        ) : (
+          <div className="space-y-2">
+            {notifications.map(n => (
+              <div key={n.id} className="flex items-start gap-3 bg-white/5 border border-white/10 rounded-lg p-3">
+                <span className={`mt-0.5 px-2 py-0.5 rounded text-xs font-medium shrink-0 ${
+                  n.channel === 'Email' ? 'bg-blue-500/20 text-blue-300' :
+                  n.channel === 'SMS'   ? 'bg-green-500/20 text-green-300' :
+                                          'bg-purple-500/20 text-purple-300'
+                }`}>
+                  {n.channel}
+                </span>
+                <p className="text-sm text-gray-300 flex-1 break-all">{n.message}</p>
+                <div className="text-right shrink-0">
+                  <span className={`text-xs ${n.isSent ? 'text-green-400' : 'text-red-400'}`}>
+                    {n.isSent ? '✓ Sent' : '✗ Failed'}
+                  </span>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {new Date(n.createdAt).toLocaleTimeString()}
+                  </p>
+                </div>
               </div>
-          }
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
