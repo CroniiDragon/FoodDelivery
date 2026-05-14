@@ -1,4 +1,3 @@
-// ── API Response wrapper (matches ApiResponse<T> from backend) ──
 export interface ApiResponse<T> {
   success: boolean
   message: string
@@ -6,7 +5,7 @@ export interface ApiResponse<T> {
   errors: string[]
 }
 
-// ── User types ───────────────────────────────────────────────────
+// ── User ─────────────────────────────────────────────────────────
 export interface UserResponse {
   id: number
   name: string
@@ -16,129 +15,72 @@ export interface UserResponse {
   isActive: boolean
   createdAt: string
 }
-
 export interface CreateCustomerDto {
-  name: string
-  email: string
-  phone: string
-  password: string
-  deliveryAddress: string
-  city: string
+  name: string; email: string; phone: string
+  password: string; deliveryAddress: string; city: string
 }
-
 export interface CreateCourierDto {
-  name: string
-  email: string
-  phone: string
-  password: string
-  vehicleType: string
+  name: string; email: string; phone: string
+  password: string; vehicleType: string
 }
+export interface LoginDto { email: string; password: string }
 
-export interface LoginDto {
-  email: string
-  password: string
-}
-
-// ── Restaurant types ─────────────────────────────────────────────
+// ── Restaurant ───────────────────────────────────────────────────
 export interface RestaurantResponse {
-  id: number
-  name: string
-  address: string
-  city: string
-  cuisine: string
-  isOpen: boolean
-  menuItemCount: number
+  id: number; name: string; address: string
+  city: string; cuisine: string; isOpen: boolean; menuItemCount: number
 }
-
 export interface CreateRestaurantDto {
-  name: string
-  address: string
-  city: string
-  cuisine: string
-  phoneNumber: string
+  name: string; address: string; city: string
+  cuisine: string; phoneNumber: string
 }
-
 export interface MenuItemResponse {
-  id: number
-  name: string
-  description: string
-  finalPrice: number
-  itemType: 'Food' | 'Drink'
-  category: string
-  isAvailable: boolean
-  restaurantId: number
+  id: number; name: string; description: string
+  finalPrice: number; itemType: 'Food' | 'Drink'
+  category: string; isAvailable: boolean; restaurantId: number
 }
-
 export interface CreateMenuItemDto {
-  name: string
-  description: string
-  basePrice: number
-  category: string
-  itemType: string
-  restaurantId: number
-  calories?: number
-  isVegetarian?: boolean
-  volumeInLiters?: number
-  isAlcoholic?: boolean
+  name: string; description: string; basePrice: number
+  category: string; itemType: string; restaurantId: number
+  calories?: number; isVegetarian?: boolean
+  volumeInLiters?: number; isAlcoholic?: boolean
 }
 
-// ── Order types ──────────────────────────────────────────────────
+// ── Order ────────────────────────────────────────────────────────
 export type OrderStatus =
-  | 'Pending'
-  | 'Confirmed'
-  | 'Preparing'
-  | 'OutForDelivery'
-  | 'Delivered'
-  | 'Cancelled'
+  | 'Pending' | 'Confirmed' | 'Preparing'
+  | 'OutForDelivery' | 'Delivered' | 'Cancelled'
+
+export type DeliveryStrategy = 'Standard' | 'Express' | 'CityBased'
 
 export interface OrderItemResponse {
-  itemName: string
-  quantity: number
-  unitPrice: number
-  totalPrice: number
+  itemName: string; quantity: number
+  unitPrice: number; totalPrice: number
 }
-
 export interface OrderResponse {
-  id: number
-  customerId: number
-  restaurantId: number
-  status: OrderStatus
-  totalPrice: number
-  paymentMethod: string
-  deliveryAddress: string
-  createdAt: string
+  id: number; customerId: number; restaurantId: number
+  status: OrderStatus; totalPrice: number; paymentMethod: string
+  deliveryAddress: string; notes?: string; createdAt: string
   items: OrderItemResponse[]
 }
-
 export interface CreateOrderItemDto {
-  menuItemId: number
-  itemName: string
-  quantity: number
-  unitPrice: number
+  menuItemId: number; itemName: string
+  quantity: number; unitPrice: number
 }
-
 export interface CreateOrderDto {
-  customerId: number
-  restaurantId: number
-  deliveryAddress: string
-  paymentMethod: string
-  notes?: string
+  customerId: number; restaurantId: number
+  deliveryAddress: string; paymentMethod: string
+  notes?: string; isExpress?: boolean
   items: CreateOrderItemDto[]
 }
 
-// ── Notification types ───────────────────────────────────────────
+// ── Notification ─────────────────────────────────────────────────
 export interface NotificationResponse {
-  id: number
-  recipientId: number
-  channel: string
-  message: string
-  isSent: boolean
-  createdAt: string
+  id: number; recipientId: number
+  channel: string; message: string
+  isSent: boolean; createdAt: string
 }
-
 export interface SendNotificationDto {
-  recipientId: number
-  recipientType: string
-  channel: string
-  message: string
+  recipientId: number; recipientType: string
+  channel: string; message: string
 }
